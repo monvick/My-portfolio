@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adobe Target Carousel Example</title>
+    <style>
+        /* Adobe Target Carousel Styles */
+        .at-carousel {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .at-carousel-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+        }
+
+        .at-carousel-track {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.3s ease-in-out;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+        }
+
+        .at-carousel-slide {
+            flex: 0 0 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            min-height: 0;
+        }
+
+        .at-carousel-slide:nth-child(2) {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .at-carousel-slide:nth-child(3) {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .at-carousel-slide:nth-child(4) {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .at-slide-content {
+            padding: 2rem;
+            max-width: 600px;
+        }
+
+        .at-slide-content h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .at-slide-content p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .at-slide-cta {
+            display: inline-block;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .at-slide-cta:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Controls */
+        .at-carousel-control {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #333;
+            transition: all 0.3s ease;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .at-carousel-control:hover {
+            background: white;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .at-carousel-control:focus {
+            outline: 2px solid #007bff;
+            outline-offset: 2px;
+        }
+
+        .at-carousel-prev {
+            left: 20px;
+        }
+
+        .at-carousel-next {
+            right: 20px;
+        }
+
+        /* Indicators */
+        .at-carousel-indicators {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .at-carousel-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .at-carousel-indicator.active {
+            background: white;
+            transform: scale(1.2);
+        }
+
+        .at-carousel-indicator:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .at-carousel-indicator:focus {
+            outline: 2px solid #007bff;
+            outline-offset: 2px;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .at-carousel-container {
+                height: 300px;
+            }
+
+            .at-slide-content h2 {
+                font-size: 1.8rem;
+            }
+
+            .at-slide-content p {
+                font-size: 1rem;
+            }
+
+            .at-carousel-control {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+
+            .at-carousel-prev {
+                left: 10px;
+            }
+
+            .at-carousel-next {
+                right: 10px;
+            }
+        }
+
+        /* Reduced motion preference */
+        @media (prefers-reduced-motion: reduce) {
+            .at-carousel-track {
+                transition: none;
+            }
+
+            .at-carousel-control {
+                transition: none;
+            }
+
+            .at-carousel-indicator {
+                transition: none;
+            }
+        }
+
+        /* Loading state */
+        .at-carousel.loading .at-carousel-track {
+            opacity: 0.5;
+        }
+
+        /* Demo page styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .demo-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .demo-controls {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .demo-button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .demo-button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-header">
+        <h1>Adobe Target Carousel Example</h1>
+        <p>A fully accessible, performant carousel implementation for Adobe Target</p>
+    </div>
+
+    <!-- Adobe Target Carousel -->
+    <div class="at-carousel" 
+         data-carousel-config='{"autoPlay": true, "interval": 5000, "pauseOnHover": true}'
+         role="region" 
+         aria-label="Featured products carousel"
+         aria-live="polite">
+        
+        <div class="at-carousel-container">
+            <div class="at-carousel-track" role="group" aria-label="Slide 1 of 4">
+                <div class="at-carousel-slide" data-slide="1">
+                    <div class="at-slide-content">
+                        <h2>Welcome to Our Store</h2>
+                        <p>Discover amazing products with unbeatable prices and quality</p>
+                        <a href="#" class="at-slide-cta" role="button">Shop Now</a>
+                    </div>
+                </div>
+                
+                <div class="at-carousel-slide" data-slide="2">
+                    <div class="at-slide-content">
+                        <h2>New Collection</h2>
+                        <p>Check out our latest arrivals and trending items</p>
+                        <a href="#" class="at-slide-cta" role="button">Explore</a>
+                    </div>
+                </div>
+                
+                <div class="at-carousel-slide" data-slide="3">
+                    <div class="at-slide-content">
+                        <h2>Special Offers</h2>
+                        <p>Save up to 50% on selected items this week only</p>
+                        <a href="#" class="at-slide-cta" role="button">View Deals</a>
+                    </div>
+                </div>
+                
+                <div class="at-carousel-slide" data-slide="4">
+                    <div class="at-slide-content">
+                        <h2>Free Shipping</h2>
+                        <p>Enjoy free shipping on orders over $50 worldwide</p>
+                        <a href="#" class="at-slide-cta" role="button">Learn More</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="at-carousel-control at-carousel-prev" 
+                aria-label="Show previous slide"
+                aria-controls="carousel-track">
+            <span aria-hidden="true">‹</span>
+        </button>
+
+        <button class="at-carousel-control at-carousel-next" 
+                aria-label="Show next slide"
+                aria-controls="carousel-track">
+            <span aria-hidden="true">›</span>
+        </button>
+
+        <div class="at-carousel-indicators">
+            <!-- Indicators will be generated by JavaScript -->
+        </div>
+    </div>
+
+    <div class="demo-controls">
+        <button class="demo-button" onclick="carousel.toggleAutoPlay()">Toggle Auto-play</button>
+        <button class="demo-button" onclick="carousel.goToSlide(0)">Go to First</button>
+        <button class="demo-button" onclick="carousel.goToSlide(carousel.slides.length - 1)">Go to Last</button>
+    </div>
+
+    <script>
+        // Adobe Target Carousel Implementation
+        (function() {
+            'use strict';
+
+            // Initialize when DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initCarousel);
+            } else {
+                initCarousel();
+            }
+
+            function initCarousel() {
+                const carouselContainer = document.querySelector('.at-carousel');
+                if (!carouselContainer) return;
+
+                try {
+                    const config = JSON.parse(carouselContainer.dataset.carouselConfig || '{}');
+                    window.carousel = new AtCarousel(carouselContainer, config);
+                    carousel.init();
+                } catch (error) {
+                    console.error('Carousel initialization failed:', error);
+                    showFallbackCarousel(carouselContainer);
+                }
+            }
+
+            function showFallbackCarousel(container) {
+                const slides = container.querySelectorAll('.at-carousel-slide');
+                slides.forEach((slide, index) => {
+                    slide.style.display = index === 0 ? 'block' : 'none';
+                });
+            }
+
+            // Main Carousel Class
+            class AtCarousel {
+                constructor(container, config) {
+                    this.container = container;
+                    this.config = Object.assign({
+                        autoPlay: false,
+                        interval: 5000,
+                        showIndicators: true,
+                        showControls: true,
+                        loop: true,
+                        pauseOnHover: true,
+                        pauseOnFocus: true,
+                        respectsReducedMotion: true
+                    }, config);
+
+                    this.currentIndex = 0;
+                    this.isPlaying = false;
+                    this.intervalId = null;
+                    this.isTransitioning = false;
+
+                    // Check for reduced motion preference
+                    if (this.config.respectsReducedMotion && 
+                        window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                        this.config.autoPlay = false;
+                    }
+                }
+
+                init() {
+                    this.setupElements();
+                    this.setupControls();
+                    this.setupIndicators();
+                    this.bindEvents();
+                    this.updateCarousel();
+
+                    if (this.config.autoPlay) {
+                        this.startAutoPlay();
+                    }
+
+                    // Remove loading state
+                    this.container.classList.remove('loading');
+                }
+
+                setupElements() {
+                    this.track = this.container.querySelector('.at-carousel-track');
+                    this.slides = this.container.querySelectorAll('.at-carousel-slide');
+                    this.prevButton = this.container.querySelector('.at-carousel-prev');
+                    this.nextButton = this.container.querySelector('.at-carousel-next');
+                    this.indicatorsContainer = this.container.querySelector('.at-carousel-indicators');
+
+                    if (!this.track || !this.slides.length) {
+                        throw new Error('Carousel structure is invalid');
+                    }
+                }
+
+                setupControls() {
+                    if (this.prevButton) {
+                        this.prevButton.addEventListener('click', () => this.previousSlide());
+                    }
+
+                    if (this.nextButton) {
+                        this.nextButton.addEventListener('click', () => this.nextSlide());
+                    }
+                }
+
+                setupIndicators() {
+                    if (!this.indicatorsContainer || !this.config.showIndicators) return;
+
+                    this.indicatorsContainer.innerHTML = '';
+                    this.indicators = [];
+
+                    this.slides.forEach((_, index) => {
+                        const indicator = document.createElement('button');
+                        indicator.className = 'at-carousel-indicator';
+                        indicator.setAttribute('aria-label', `Go to slide ${index + 1}`);
+                        indicator.addEventListener('click', () => this.goToSlide(index));
+                        
+                        this.indicatorsContainer.appendChild(indicator);
+                        this.indicators.push(indicator);
+                    });
+                }
+
+                bindEvents() {
+                    // Keyboard navigation
+                    this.container.addEventListener('keydown', this.handleKeyDown.bind(this));
+
+                    // Pause on hover
+                    if (this.config.pauseOnHover) {
+                        this.container.addEventListener('mouseenter', () => this.pauseAutoPlay());
+                        this.container.addEventListener('mouseleave', () => this.resumeAutoPlay());
+                    }
+
+                    // Pause on focus
+                    if (this.config.pauseOnFocus) {
+                        this.container.addEventListener('focusin', () => this.pauseAutoPlay());
+                        this.container.addEventListener('focusout', () => this.resumeAutoPlay());
+                    }
+
+                    // Touch/swipe support
+                    this.setupTouchEvents();
+
+                    // Window resize
+                    window.addEventListener('resize', this.debounce(() => {
+                        this.updateCarousel();
+                    }, 250));
+                }
+
+                setupTouchEvents() {
+                    let startX = 0;
+                    let startY = 0;
+                    let isScrolling = false;
+
+                    this.container.addEventListener('touchstart', (e) => {
+                        startX = e.touches[0].clientX;
+                        startY = e.touches[0].clientY;
+                        isScrolling = false;
+                    }, { passive: true });
+
+                    this.container.addEventListener('touchmove', (e) => {
+                        if (!startX || !startY) return;
+
+                        const diffX = Math.abs(e.touches[0].clientX - startX);
+                        const diffY = Math.abs(e.touches[0].clientY - startY);
+
+                        if (diffY > diffX) {
+                            isScrolling = true;
+                        }
+                    }, { passive: true });
+
+                    this.container.addEventListener('touchend', (e) => {
+                        if (!startX || isScrolling) return;
+
+                        const endX = e.changedTouches[0].clientX;
+                        const diff = startX - endX;
+
+                        if (Math.abs(diff) > 50) { // Minimum swipe distance
+                            if (diff > 0) {
+                                this.nextSlide();
+                            } else {
+                                this.previousSlide();
+                            }
+                        }
+
+                        startX = 0;
+                        startY = 0;
+                    }, { passive: true });
+                }
+
+                handleKeyDown(event) {
+                    switch(event.key) {
+                        case 'ArrowLeft':
+                            event.preventDefault();
+                            this.previousSlide();
+                            break;
+                        case 'ArrowRight':
+                            event.preventDefault();
+                            this.nextSlide();
+                            break;
+                        case 'Home':
+                            event.preventDefault();
+                            this.goToSlide(0);
+                            break;
+                        case 'End':
+                            event.preventDefault();
+                            this.goToSlide(this.slides.length - 1);
+                            break;
+                    }
+                }
+
+                nextSlide() {
+                    if (this.isTransitioning) return;
+                    
+                    const nextIndex = this.config.loop ? 
+                        (this.currentIndex + 1) % this.slides.length :
+                        Math.min(this.currentIndex + 1, this.slides.length - 1);
+                    
+                    this.goToSlide(nextIndex);
+                    this.trackEvent('next', nextIndex);
+                }
+
+                previousSlide() {
+                    if (this.isTransitioning) return;
+                    
+                    const prevIndex = this.config.loop ? 
+                        (this.currentIndex - 1 + this.slides.length) % this.slides.length :
+                        Math.max(this.currentIndex - 1, 0);
+                    
+                    this.goToSlide(prevIndex);
+                    this.trackEvent('previous', prevIndex);
+                }
+
+                goToSlide(index) {
+                    if (this.isTransitioning || index === this.currentIndex) return;
+
+                    this.isTransitioning = true;
+                    this.currentIndex = index;
+                    this.updateCarousel();
+                    this.trackEvent('goto', index);
+
+                    // Reset transition lock after animation
+                    setTimeout(() => {
+                        this.isTransitioning = false;
+                    }, 300);
+                }
+
+                updateCarousel() {
+                    const translateX = -this.currentIndex * 100;
+                    this.track.style.transform = `translateX(${translateX}%)`;
+                    
+                    // Update ARIA labels
+                    this.track.setAttribute('aria-label', 
+                        `Slide ${this.currentIndex + 1} of ${this.slides.length}`);
+
+                    // Update indicators
+                    if (this.indicators) {
+                        this.indicators.forEach((indicator, index) => {
+                            indicator.classList.toggle('active', index === this.currentIndex);
+                        });
+                    }
+
+                    // Update slide visibility for screen readers
+                    this.slides.forEach((slide, index) => {
+                        slide.setAttribute('aria-hidden', index !== this.currentIndex);
+                    });
+                }
+
+                startAutoPlay() {
+                    if (!this.config.autoPlay || this.isPlaying) return;
+
+                    this.isPlaying = true;
+                    this.intervalId = setInterval(() => {
+                        this.nextSlide();
+                    }, this.config.interval);
+                }
+
+                pauseAutoPlay() {
+                    if (this.intervalId) {
+                        clearInterval(this.intervalId);
+                        this.intervalId = null;
+                    }
+                }
+
+                resumeAutoPlay() {
+                    if (this.config.autoPlay && this.isPlaying && !this.intervalId) {
+                        this.startAutoPlay();
+                    }
+                }
+
+                toggleAutoPlay() {
+                    if (this.isPlaying) {
+                        this.pauseAutoPlay();
+                        this.isPlaying = false;
+                    } else {
+                        this.startAutoPlay();
+                    }
+                }
+
+                trackEvent(action, slideIndex) {
+                    const slideTitle = this.slides[slideIndex]?.querySelector('h2')?.textContent || `Slide ${slideIndex + 1}`;
+                    
+                    // Adobe Target tracking
+                    if (typeof adobe !== 'undefined' && adobe.target) {
+                        adobe.target.trackEvent({
+                            mbox: 'carousel-interaction',
+                            params: {
+                                'carousel_action': action,
+                                'slide_index': slideIndex,
+                                'slide_title': slideTitle
+                            }
+                        });
+                    }
+
+                    // Google Analytics tracking
+                    if (typeof gtag !== 'undefined') {
+                        gtag('event', 'carousel_interaction', {
+                            'event_category': 'engagement',
+                            'event_label': slideTitle,
+                            'custom_parameter_1': slideIndex
+                        });
+                    }
+
+                    // Console log for demo
+                    console.log(`Carousel ${action}: Slide ${slideIndex + 1} - ${slideTitle}`);
+                }
+
+                debounce(func, wait) {
+                    let timeout;
+                    return function executedFunction(...args) {
+                        const later = () => {
+                            clearTimeout(timeout);
+                            func(...args);
+                        };
+                        clearTimeout(timeout);
+                        timeout = setTimeout(later, wait);
+                    };
+                }
+
+                destroy() {
+                    this.pauseAutoPlay();
+                    // Remove event listeners and clean up
+                    this.container.removeEventListener('keydown', this.handleKeyDown);
+                    window.removeEventListener('resize', this.updateCarousel);
+                }
+            }
+
+            // Make AtCarousel available globally for demo purposes
+            window.AtCarousel = AtCarousel;
+        })();
+    </script>
+</body>
+</html>
